@@ -1,0 +1,22 @@
+name: Build and test
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: python -m pip install -r requirements.txt tensorflow
+      - run: python -m pytest -q
+        env:
+          OMP_NUM_THREADS: '1'
+          TF_NUM_INTRAOP_THREADS: '1'
+          TF_NUM_INTEROP_THREADS: '1'
+      - run: python hw4/5.py --dataset iris --splits 3 --output-dir outputs/ensemble
+      - run: python hw4/7.py --dataset digits --output-dir outputs/pca
